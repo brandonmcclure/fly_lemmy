@@ -1,0 +1,171 @@
+{
+    "provider": {
+        "fly": {
+            "internaltunnelorg": "personal",
+            "internaltunnelregion": "den",
+            "useinternaltunnel": true
+        }
+    },
+    "resource": {
+        "fly_app": {
+            "bmm-fly-lemmy001": {
+                "name": "bmm-fly-lemmy001",
+                "org": "personal"
+            },
+            "bmm-fly-lemmypictrs001": {
+                "name": "bmm-fly-lemmypictrs001",
+                "org": "personal"
+            },
+            "bmm-fly-lemmyui001": {
+                "name": "bmm-fly-lemmyui001",
+                "org": "personal"
+            }
+        },
+        "fly_ip": {
+            "bmm-fly-lemmy001_ip01": {
+                "app": "bmm-fly-lemmy001",
+                "depends_on": [
+                    "fly_app.bmm-fly-lemmy001"
+                ],
+                "type": "v4"
+            },
+            "bmm-fly-lemmypictrs001_ip01": {
+                "app": "bmm-fly-lemmypictrs001",
+                "depends_on": [
+                    "fly_app.bmm-fly-lemmypictrs001"
+                ],
+                "type": "v4"
+            },
+            "bmm-fly-lemmyui001_ip01": {
+                "app": "bmm-fly-lemmyui001",
+                "depends_on": [
+                    "fly_app.bmm-fly-lemmyui001"
+                ],
+                "type": "v4"
+            }
+        },
+        "fly_machine": {
+            "bmm-fly-lemmy001_den_machine01": {
+                "app": "bmm-fly-lemmy001",
+                "cpus": 1,
+                "cputype": "shared",
+                "env": {
+                    "LEMMY_DATABASE_URL": "postgres://postgres:secret@fly_postgres.flycast:5432",
+                    "RUST_LOG": "warn,lemmy_server=debug,lemmy_api=debug,lemmy_api_common=debug,lemmy_api_crud=debug,lemmy_apub=debug,lemmy_db_schema=debug,lemmy_db_views=debug,lemmy_db_views_actor=debug,lemmy_db_views_moderator=debug,lemmy_routes=debug,lemmy_utils=debug,lemmy_websocket=debug",
+                    "RUST_BACKTRACE": "full"
+                },
+                "depends_on": [
+                    "fly_app.bmm-fly-lemmy001"
+                ],
+                "image": "bmcclure89/lemmy:latest",
+                "memorymb": 512,
+                "name": "bmm-fly-lemmy001_den",
+                "region": "den",
+                "services": [
+                    {
+                        "internal_port": 8536,
+                        "name": "web",
+                        "ports": [
+                            {
+                                "handlers": [
+                                    "tls",
+                                    "http"
+                                ],
+                                "port": 443
+                            },
+                            {
+                                "handlers": [
+                                    "http"
+                                ],
+                                "port": 80
+                            }
+                        ],
+                        "protocol": "tcp"
+                    }
+                ]
+            },
+            "bmm-fly-lemmypictrs001_den_machine01": {
+                "app": "bmm-fly-lemmypictrs001",
+                "cpus": 1,
+                "cputype": "shared",
+                "depends_on": [
+                    "fly_app.bmm-fly-lemmypictrs001"
+                ],
+                "image": "asonix/pictrs:0.4.0-beta.19",
+                "memorymb": 512,
+                "name": "bmm-fly-lemmypictrs001_den",
+                "region": "den",
+                "services": [
+                    {
+                        "internal_port": 8080,
+                        "name": "web",
+                        "ports": [
+                            {
+                                "handlers": [
+                                    "tls",
+                                    "http"
+                                ],
+                                "port": 443
+                            },
+                            {
+                                "handlers": [
+                                    "http"
+                                ],
+                                "port": 80
+                            }
+                        ],
+                        "protocol": "tcp"
+                    }
+                ]
+            },
+            "bmm-fly-lemmyui001_den_machine01": {
+                "app": "bmm-fly-lemmyui001",
+                "cpus": 1,
+                "cputype": "shared",
+                "env": {
+                    "LEMMY_UI_LEMMY_INTERNAL_HOST": "bmm-fly-lemmy001:8536",
+                    "LEMMY_UI_LEMMY_EXTERNAL_HOST": "https://bmm-fly-lemmyui001.fly.dev/",
+                    "LEMMY_HTTPS": "false",
+                    "LEMMY_UI_DEBUG": "true"
+                },
+                "depends_on": [
+                    "fly_app.bmm-fly-lemmyui001"
+                ],
+                "image": "dessalines/lemmy-ui:0.17.1",
+                "memorymb": 512,
+                "name": "bmm-fly-lemmyui001_den",
+                "region": "den",
+                "services": [
+                    {
+                        "internal_port": 1234,
+                        "name": "web",
+                        "ports": [
+                            {
+                                "handlers": [
+                                    "tls",
+                                    "http"
+                                ],
+                                "port": 443
+                            },
+                            {
+                                "handlers": [
+                                    "http"
+                                ],
+                                "port": 80
+                            }
+                        ],
+                        "protocol": "tcp"
+                    }
+                ]
+            }
+        }
+    },
+    "terraform": {
+        "required_providers": {
+            "fly": {
+                "source": "fly-apps/fly",
+                "version": "0.0.22"
+            }
+        }
+    }
+}
